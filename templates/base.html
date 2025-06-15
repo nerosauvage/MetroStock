@@ -1,50 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MetroCom">
     <title>{% block title %}MetroCom Inventory System{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- iOS Style CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ios-style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/logo.png.webp') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='uploads/logo.png.webp') }}">
+    
     {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
+<body class="ios-safe-area-top ios-safe-area-bottom">
+    <!-- iOS Style Navigation Bar -->
+    <nav class="navbar ios-safe-area-left ios-safe-area-right">
         <div class="navbar-left">
             <img src="{{ url_for('static', filename='uploads/logo.png.webp') }}" 
                  alt="MetroCom Logo" 
-                 class="logo" 
+                 class="logo ios-haptic" 
                  onclick="window.location.href='{{ url_for('home') }}'">
         </div>
         <div class="navbar-right">
-            <button class="nav-btn" onclick="window.location.reload()" title="刷新页面">
-                <span>🔄</span> Refresh
+            <button class="nav-btn ios-haptic" onclick="window.location.reload()" title="刷新页面">
+                <span>🔄</span>
+                <span class="nav-text">刷新</span>
             </button>
-            <button class="nav-btn" onclick="window.location.href='{{ url_for('shipment_overview') }}'" title="出货管理">
-                <span>📦</span> Shipment
+            <button class="nav-btn ios-haptic" onclick="window.location.href='{{ url_for('shipment_overview') }}'" title="出货管理">
+                <span>📦</span>
+                <span class="nav-text">出货</span>
             </button>
-            <button class="nav-btn" onclick="window.location.href='{{ url_for('home') }}'" title="库存查询">
-                <span>📊</span> Inventory
+            <button class="nav-btn ios-haptic" onclick="window.location.href='{{ url_for('home') }}'" title="库存查询">
+                <span>📊</span>
+                <span class="nav-text">库存</span>
             </button>
-            <button class="nav-btn" onclick="window.history.back()" title="返回上一页">
-                <span>⬅️</span> Back
-            </button>
-            <button class="nav-btn" onclick="window.history.forward()" title="前进下一页">
-                <span>➡️</span> Forward
+            <button class="nav-btn ios-haptic" onclick="window.history.back()" title="返回上一页">
+                <span>⬅️</span>
+                <span class="nav-text">返回</span>
             </button>
         </div>
     </nav>
 
-    <!-- Flash Messages -->
+    <!-- iOS Style Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flash-messages">
+            <div class="flash-messages" style="padding: var(--ios-spacing-md);">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'error' if category == 'error' else category }}">
-                        {{ message }}
-                        <button type="button" class="close" onclick="this.parentElement.style.display='none'">×</button>
+                    <div class="ios-alert ios-alert-{{ 'error' if category == 'error' else category }} ios-animate-fade-in">
+                        <div class="ios-body">{{ message }}</div>
+                        <button type="button" class="ios-btn-small ios-btn-secondary" 
+                                onclick="this.parentElement.style.display='none'" 
+                                style="position: absolute; top: 8px; right: 8px; min-height: 24px; padding: 4px 8px;">×</button>
                     </div>
                 {% endfor %}
             </div>
@@ -52,14 +64,14 @@
     {% endwith %}
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content ios-safe-area-left ios-safe-area-right">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
+    <!-- iOS Style Footer -->
+    <footer class="footer" style="background: var(--ios-tertiary-background); padding: var(--ios-spacing-lg); text-align: center; border-top: 0.5px solid var(--ios-gray-5);">
         <div class="container">
-            <p>&copy; 2024 MetroCom Inventory System. All rights reserved.</p>
+            <p class="ios-footnote">&copy; 2024 MetroCom Inventory System. All rights reserved.</p>
         </div>
     </footer>
 
@@ -67,12 +79,11 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
 
-    <!-- Print Styles -->
+    <!-- iOS Style Print Styles -->
     <style>
         @media print {
             .navbar, .footer, .flash-messages, 
-            .btn-print, .btn-submit, .button-group,
-            .nav-btn, .cart {
+            .ios-btn, .nav-btn, .cart-sidebar {
                 display: none !important;
             }
             
@@ -81,11 +92,33 @@
                 color: black !important;
             }
             
-            .container {
+            .ios-card {
                 box-shadow: none !important;
-                border: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+        
+        /* Hide nav text on small screens */
+        @media (max-width: 768px) {
+            .nav-text {
+                display: none;
             }
         }
     </style>
+
+    <!-- iOS Haptic Feedback Script -->
+    <script>
+        // Add haptic feedback simulation for iOS-style interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const hapticElements = document.querySelectorAll('.ios-haptic');
+            hapticElements.forEach(element => {
+                element.addEventListener('touchstart', function() {
+                    if (navigator.vibrate) {
+                        navigator.vibrate(10);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

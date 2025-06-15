@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}库存总览 - MetroCom{% endblock %}
+{% block title %}出货管理 - MetroCom{% endblock %}
 
 {% block extra_css %}
 <style>
     .main-content {
         display: flex;
-        padding: 20px;
-        gap: 20px;
+        padding: var(--ios-spacing-lg);
+        gap: var(--ios-spacing-lg);
         min-height: calc(100vh - 120px);
     }
 
@@ -18,197 +18,227 @@
 
     .page-header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: var(--ios-spacing-xl);
+        padding: var(--ios-spacing-lg) 0;
     }
 
     .page-title {
-        font-size: 2rem;
-        color: #333;
-        margin-bottom: 10px;
+        font-size: 28px;
+        font-weight: var(--ios-font-weight-bold);
+        color: var(--ios-label);
+        margin-bottom: var(--ios-spacing-sm);
     }
 
-    .search-bar {
+    .search-container {
         max-width: 400px;
-        margin: 0 auto 30px;
+        margin: 0 auto var(--ios-spacing-xl);
         position: relative;
     }
 
     .search-input {
         width: 100%;
-        padding: 12px 40px 12px 15px;
-        border: 2px solid #ddd;
-        border-radius: 25px;
+        background: var(--ios-secondary-background);
+        border: 1px solid var(--ios-gray-4);
+        border-radius: var(--ios-radius-xl);
+        padding: var(--ios-spacing-md) var(--ios-spacing-lg) var(--ios-spacing-md) 50px;
         font-size: 16px;
+        font-family: var(--ios-font-family);
+        color: var(--ios-label);
         outline: none;
-        transition: border-color 0.3s ease;
+        transition: all 0.2s ease;
+        box-shadow: var(--ios-shadow-sm);
     }
 
     .search-input:focus {
-        border-color: #007bff;
+        border-color: var(--ios-blue);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
     }
 
     .search-icon {
         position: absolute;
-        right: 15px;
+        left: var(--ios-spacing-md);
         top: 50%;
         transform: translateY(-50%);
-        color: #666;
+        color: var(--ios-gray-1);
+        font-size: 18px;
     }
 
     .category-section {
-        margin-bottom: 40px;
+        margin-bottom: var(--ios-spacing-xl);
     }
 
     .category-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #007bff;
+        margin-bottom: var(--ios-spacing-lg);
+        padding: var(--ios-spacing-md) 0;
     }
 
     .category-title {
-        font-size: 1.5rem;
-        color: #333;
+        font-size: 22px;
+        font-weight: var(--ios-font-weight-bold);
+        color: var(--ios-label);
         margin: 0;
     }
 
     .category-count {
-        background: #007bff;
+        background: var(--ios-blue);
         color: white;
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-size: 0.9rem;
-        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: var(--ios-font-weight-semibold);
     }
 
     .product-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: var(--ios-spacing-md);
+        margin-bottom: var(--ios-spacing-lg);
     }
 
     .product-card {
-        background: white;
-        border-radius: 15px;
-        padding: 15px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: var(--ios-secondary-background);
+        border-radius: var(--ios-radius-lg);
+        padding: var(--ios-spacing-md);
+        box-shadow: var(--ios-shadow-sm);
         transition: all 0.3s ease;
         cursor: pointer;
-        border: 2px solid transparent;
+        border: 0.5px solid var(--ios-gray-5);
         position: relative;
         overflow: hidden;
     }
 
+    .product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--ios-orange), var(--ios-red));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
     .product-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        border-color: #007bff;
+        box-shadow: var(--ios-shadow-md);
+    }
+
+    .product-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .product-card:active {
+        transform: translateY(-1px);
     }
 
     .product-image {
         width: 100%;
-        height: 120px;
+        height: 100px;
         object-fit: cover;
-        border-radius: 10px;
-        margin-bottom: 10px;
+        border-radius: var(--ios-radius-md);
+        margin-bottom: var(--ios-spacing-sm);
+        box-shadow: var(--ios-shadow-sm);
     }
 
     .product-name {
-        font-weight: bold;
-        font-size: 0.9rem;
-        color: #333;
-        margin-bottom: 5px;
+        font-weight: var(--ios-font-weight-semibold);
+        font-size: 14px;
+        color: var(--ios-label);
+        margin-bottom: var(--ios-spacing-xs);
         line-height: 1.3;
     }
 
     .product-stock {
-        font-size: 0.8rem;
-        color: #666;
+        font-size: 12px;
+        color: var(--ios-secondary-label);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
     .stock-badge {
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 0.7rem;
-        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: var(--ios-font-weight-semibold);
     }
 
     .stock-high {
-        background: #d4edda;
-        color: #155724;
+        background: rgba(52, 199, 89, 0.1);
+        color: var(--ios-green);
     }
 
     .stock-medium {
-        background: #fff3cd;
-        color: #856404;
+        background: rgba(255, 149, 0, 0.1);
+        color: var(--ios-orange);
     }
 
     .stock-low {
-        background: #f8d7da;
-        color: #721c24;
+        background: rgba(255, 59, 48, 0.1);
+        color: var(--ios-red);
     }
 
     .stock-out {
-        background: #f5c6cb;
-        color: #721c24;
+        background: rgba(255, 59, 48, 0.2);
+        color: var(--ios-red);
     }
 
-    /* Shopping Cart Styles */
+    /* Shopping Cart Sidebar */
     .cart-sidebar {
         position: fixed;
         right: 0;
         top: 80px;
         width: 300px;
         height: calc(100vh - 80px);
-        background: white;
-        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-        padding: 20px;
+        background: var(--ios-secondary-background);
+        box-shadow: var(--ios-shadow-lg);
+        padding: var(--ios-spacing-lg);
         overflow-y: auto;
         z-index: 1000;
-        border-left: 3px solid #007bff;
+        border-left: 0.5px solid var(--ios-gray-5);
     }
 
     .cart-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #eee;
+        margin-bottom: var(--ios-spacing-lg);
+        padding-bottom: var(--ios-spacing-md);
+        border-bottom: 0.5px solid var(--ios-gray-5);
     }
 
     .cart-title {
-        font-size: 1.3rem;
-        font-weight: bold;
-        color: #333;
+        font-size: 20px;
+        font-weight: var(--ios-font-weight-bold);
+        color: var(--ios-label);
         margin: 0;
     }
 
     .cart-count {
-        background: #007bff;
+        background: var(--ios-red);
         color: white;
-        padding: 3px 8px;
-        border-radius: 50%;
-        font-size: 0.8rem;
-        min-width: 20px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: var(--ios-font-weight-bold);
+        min-width: 24px;
         text-align: center;
     }
 
     .cart-items {
-        margin-bottom: 20px;
+        margin-bottom: var(--ios-spacing-lg);
     }
 
     .cart-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
+        padding: var(--ios-spacing-md) 0;
+        border-bottom: 0.5px solid var(--ios-gray-5);
     }
 
     .cart-item:last-child {
@@ -220,87 +250,96 @@
     }
 
     .cart-item-name {
-        font-weight: bold;
-        font-size: 0.9rem;
-        color: #333;
+        font-weight: var(--ios-font-weight-semibold);
+        font-size: 14px;
+        color: var(--ios-label);
         margin-bottom: 2px;
+        line-height: 1.3;
     }
 
     .cart-item-quantity {
-        font-size: 0.8rem;
-        color: #666;
+        font-size: 12px;
+        color: var(--ios-secondary-label);
     }
 
     .cart-item-remove {
-        background: #dc3545;
+        background: var(--ios-red);
         color: white;
         border: none;
         border-radius: 50%;
-        width: 25px;
-        height: 25px;
+        width: 24px;
+        height: 24px;
         cursor: pointer;
-        font-size: 0.8rem;
+        font-size: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.2s ease;
     }
 
     .cart-item-remove:hover {
-        background: #c82333;
+        background: #E6342A;
+        transform: scale(1.1);
     }
 
     .cart-footer {
-        border-top: 2px solid #eee;
-        padding-top: 15px;
+        border-top: 0.5px solid var(--ios-gray-5);
+        padding-top: var(--ios-spacing-md);
     }
 
     .cart-total {
-        font-size: 1.1rem;
-        font-weight: bold;
-        margin-bottom: 15px;
+        font-size: 16px;
+        font-weight: var(--ios-font-weight-semibold);
+        margin-bottom: var(--ios-spacing-md);
         text-align: center;
-        color: #333;
+        color: var(--ios-label);
+        padding: var(--ios-spacing-md);
+        background: var(--ios-tertiary-background);
+        border-radius: var(--ios-radius-md);
     }
 
     .cart-actions {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: var(--ios-spacing-sm);
     }
 
     .cart-btn {
-        padding: 12px;
+        padding: var(--ios-spacing-md);
         border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: bold;
+        border-radius: var(--ios-radius-md);
+        font-size: 16px;
+        font-weight: var(--ios-font-weight-semibold);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+        min-height: 44px;
     }
 
     .cart-btn-primary {
-        background: #28a745;
+        background: var(--ios-green);
         color: white;
     }
 
     .cart-btn-primary:hover {
-        background: #218838;
+        background: #30B454;
+        transform: translateY(-1px);
     }
 
     .cart-btn-secondary {
-        background: #6c757d;
-        color: white;
+        background: var(--ios-gray-5);
+        color: var(--ios-label);
     }
 
     .cart-btn-secondary:hover {
-        background: #5a6268;
+        background: var(--ios-gray-4);
+        transform: translateY(-1px);
     }
 
     .empty-cart {
         text-align: center;
-        color: #666;
+        color: var(--ios-secondary-label);
         font-style: italic;
-        padding: 20px 0;
+        padding: var(--ios-spacing-xl) 0;
     }
 
     /* Quantity Dialog */
@@ -309,118 +348,139 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        background: var(--ios-secondary-background);
+        padding: var(--ios-spacing-xl);
+        border-radius: var(--ios-radius-xl);
+        box-shadow: var(--ios-shadow-lg);
         z-index: 2000;
         display: none;
-        min-width: 300px;
+        min-width: 320px;
+        max-width: 90vw;
     }
 
     .dialog-header {
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: var(--ios-spacing-lg);
     }
 
     .dialog-title {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 5px;
+        font-size: 18px;
+        font-weight: var(--ios-font-weight-bold);
+        color: var(--ios-label);
+        margin-bottom: var(--ios-spacing-xs);
     }
 
     .dialog-subtitle {
-        font-size: 0.9rem;
-        color: #666;
+        font-size: 14px;
+        color: var(--ios-secondary-label);
     }
 
     .quantity-display {
         width: 100%;
-        font-size: 2rem;
-        padding: 15px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        margin-bottom: 20px;
+        font-size: 32px;
+        padding: var(--ios-spacing-lg);
+        border: 1px solid var(--ios-gray-4);
+        border-radius: var(--ios-radius-md);
+        margin-bottom: var(--ios-spacing-lg);
         text-align: center;
-        background: #f8f9fa;
-        font-weight: bold;
-        color: #333;
+        background: var(--ios-tertiary-background);
+        font-weight: var(--ios-font-weight-bold);
+        color: var(--ios-label);
+        outline: none;
     }
 
     .number-pad {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: var(--ios-spacing-sm);
+        margin-bottom: var(--ios-spacing-lg);
     }
 
     .number-key {
-        background: white;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        padding: 15px;
-        font-size: 1.2rem;
-        font-weight: bold;
+        background: var(--ios-secondary-background);
+        border: 1px solid var(--ios-gray-4);
+        border-radius: var(--ios-radius-md);
+        padding: var(--ios-spacing-lg);
+        font-size: 18px;
+        font-weight: var(--ios-font-weight-semibold);
         cursor: pointer;
         transition: all 0.2s ease;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .number-key:hover {
-        background: #f8f9fa;
-        border-color: #007bff;
+        background: var(--ios-gray-6);
+        transform: translateY(-1px);
     }
 
     .number-key:active {
-        transform: scale(0.95);
+        transform: translateY(0);
+        background: var(--ios-gray-5);
     }
 
     .number-key.special {
-        background: #007bff;
+        background: var(--ios-blue);
         color: white;
-        border-color: #007bff;
+        border-color: var(--ios-blue);
     }
 
     .number-key.special:hover {
-        background: #0056b3;
+        background: var(--ios-blue-dark);
     }
 
     .dialog-actions {
         display: flex;
-        gap: 10px;
+        gap: var(--ios-spacing-sm);
     }
 
     .dialog-btn {
         flex: 1;
-        padding: 12px;
+        padding: var(--ios-spacing-md);
         border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: bold;
+        border-radius: var(--ios-radius-md);
+        font-size: 16px;
+        font-weight: var(--ios-font-weight-semibold);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+        min-height: 44px;
     }
 
     .dialog-btn-cancel {
-        background: #6c757d;
-        color: white;
+        background: var(--ios-gray-5);
+        color: var(--ios-label);
     }
 
     .dialog-btn-confirm {
-        background: #28a745;
+        background: var(--ios-green);
         color: white;
     }
 
     .dialog-btn:hover {
-        opacity: 0.9;
         transform: translateY(-1px);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 1500;
+        display: none;
     }
 
     /* Responsive Design */
     @media (max-width: 768px) {
         .main-content {
             flex-direction: column;
-            padding: 10px;
+            padding: var(--ios-spacing-md);
         }
 
         .content-area {
@@ -432,19 +492,32 @@
             width: 100%;
             height: auto;
             top: 0;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--ios-shadow-md);
             border-left: none;
-            border-top: 3px solid #007bff;
+            border-top: 0.5px solid var(--ios-gray-5);
+            border-radius: var(--ios-radius-lg) var(--ios-radius-lg) 0 0;
         }
 
         .product-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: var(--ios-spacing-sm);
         }
 
         .quantity-dialog {
             width: 90%;
             max-width: 300px;
+            padding: var(--ios-spacing-lg);
+        }
+
+        .quantity-display {
+            font-size: 24px;
+            padding: var(--ios-spacing-md);
+        }
+
+        .number-key {
+            padding: var(--ios-spacing-md);
+            font-size: 16px;
+            min-height: 44px;
         }
     }
 </style>
@@ -452,23 +525,23 @@
 
 {% block content %}
 <div class="content-area">
-    <div class="page-header">
-        <h1 class="page-title">库存总览</h1>
-        <div class="search-bar">
+    <div class="page-header ios-animate-fade-in">
+        <h1 class="page-title">出货管理</h1>
+        <div class="search-container">
             <input type="text" class="search-input" placeholder="搜索产品..." id="searchInput">
             <span class="search-icon">🔍</span>
         </div>
     </div>
 
     {% for category, products in products_by_category.items() %}
-    <div class="category-section" data-category="{{ category }}">
+    <div class="category-section ios-animate-fade-in" data-category="{{ category }}">
         <div class="category-header">
             <h2 class="category-title">{{ category }}</h2>
-            <span class="category-count">{{ products|length }} 件</span>
+            <span class="category-count">{{ products|length }}</span>
         </div>
         <div class="product-grid">
             {% for product in products %}
-            <div class="product-card" 
+            <div class="product-card ios-haptic" 
                  data-product-name="{{ product.name }}" 
                  data-product-stock="{{ product.quantity }}"
                  onclick="openQuantityDialog('{{ product.name }}', '{{ product.quantity }}')">
@@ -490,7 +563,7 @@
     {% endfor %}
 </div>
 
-<!-- Shopping Cart Sidebar -->
+<!-- iOS Style Shopping Cart Sidebar -->
 <div class="cart-sidebar">
     <div class="cart-header">
         <h3 class="cart-title">购物车</h3>
@@ -504,17 +577,17 @@
     <div class="cart-footer">
         <div class="cart-total" id="cartTotal">总计: 0 件商品</div>
         <div class="cart-actions">
-            <button class="cart-btn cart-btn-primary" onclick="submitCart()">
+            <button class="cart-btn cart-btn-primary ios-haptic" onclick="submitCart()">
                 确认出货
             </button>
-            <button class="cart-btn cart-btn-secondary" onclick="clearCart()">
+            <button class="cart-btn cart-btn-secondary ios-haptic" onclick="clearCart()">
                 清空购物车
             </button>
         </div>
     </div>
 </div>
 
-<!-- Quantity Selection Dialog -->
+<!-- iOS Style Quantity Selection Dialog -->
 <div class="quantity-dialog" id="quantityDialog">
     <div class="dialog-header">
         <div class="dialog-title" id="dialogProductName">选择数量</div>
@@ -524,28 +597,28 @@
     <input type="text" class="quantity-display" id="quantityDisplay" value="0" readonly>
     
     <div class="number-pad">
-        <div class="number-key" onclick="addDigit('1')">1</div>
-        <div class="number-key" onclick="addDigit('2')">2</div>
-        <div class="number-key" onclick="addDigit('3')">3</div>
-        <div class="number-key" onclick="addDigit('4')">4</div>
-        <div class="number-key" onclick="addDigit('5')">5</div>
-        <div class="number-key" onclick="addDigit('6')">6</div>
-        <div class="number-key" onclick="addDigit('7')">7</div>
-        <div class="number-key" onclick="addDigit('8')">8</div>
-        <div class="number-key" onclick="addDigit('9')">9</div>
-        <div class="number-key special" onclick="clearQuantity()">清除</div>
-        <div class="number-key" onclick="addDigit('0')">0</div>
-        <div class="number-key special" onclick="confirmQuantity()">确定</div>
+        <div class="number-key ios-haptic" onclick="addDigit('1')">1</div>
+        <div class="number-key ios-haptic" onclick="addDigit('2')">2</div>
+        <div class="number-key ios-haptic" onclick="addDigit('3')">3</div>
+        <div class="number-key ios-haptic" onclick="addDigit('4')">4</div>
+        <div class="number-key ios-haptic" onclick="addDigit('5')">5</div>
+        <div class="number-key ios-haptic" onclick="addDigit('6')">6</div>
+        <div class="number-key ios-haptic" onclick="addDigit('7')">7</div>
+        <div class="number-key ios-haptic" onclick="addDigit('8')">8</div>
+        <div class="number-key ios-haptic" onclick="addDigit('9')">9</div>
+        <div class="number-key special ios-haptic" onclick="clearQuantity()">清除</div>
+        <div class="number-key ios-haptic" onclick="addDigit('0')">0</div>
+        <div class="number-key special ios-haptic" onclick="confirmQuantity()">确定</div>
     </div>
     
     <div class="dialog-actions">
-        <button class="dialog-btn dialog-btn-cancel" onclick="closeQuantityDialog()">取消</button>
-        <button class="dialog-btn dialog-btn-confirm" onclick="confirmQuantity()">添加到购物车</button>
+        <button class="dialog-btn dialog-btn-cancel ios-haptic" onclick="closeQuantityDialog()">取消</button>
+        <button class="dialog-btn dialog-btn-confirm ios-haptic" onclick="confirmQuantity()">添加到购物车</button>
     </div>
 </div>
 
-<!-- Overlay for dialog -->
-<div class="modal-overlay" id="dialogOverlay" style="display: none;" onclick="closeQuantityDialog()"></div>
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="dialogOverlay" onclick="closeQuantityDialog()"></div>
 {% endblock %}
 
 {% block extra_js %}
@@ -553,13 +626,19 @@
 let currentProduct = null;
 let cart = JSON.parse(localStorage.getItem('metropos_cart') || '[]');
 
-// Initialize page
+// Initialize page with iOS animations
 document.addEventListener('DOMContentLoaded', function() {
     updateCartDisplay();
     setupSearch();
+    
+    // Add staggered animation to category sections
+    const sections = document.querySelectorAll('.category-section');
+    sections.forEach((section, index) => {
+        section.style.animationDelay = `${index * 0.1}s`;
+    });
 });
 
-// Search functionality
+// Search functionality with iOS-style smooth animations
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', function() {
@@ -570,18 +649,31 @@ function setupSearch() {
         productCards.forEach(card => {
             const productName = card.dataset.productName.toLowerCase();
             const isVisible = productName.includes(searchTerm);
-            card.style.display = isVisible ? 'block' : 'none';
+            
+            if (isVisible) {
+                card.style.display = 'block';
+                card.classList.add('ios-animate-fade-in');
+            } else {
+                card.style.display = 'none';
+                card.classList.remove('ios-animate-fade-in');
+            }
         });
         
-        // Hide empty categories
+        // Hide empty categories with smooth transition
         categorySection.forEach(section => {
             const visibleProducts = section.querySelectorAll('.product-card[style="display: block"], .product-card:not([style*="display: none"])');
-            section.style.display = visibleProducts.length > 0 ? 'block' : 'none';
+            if (visibleProducts.length > 0) {
+                section.style.display = 'block';
+                section.classList.add('ios-animate-fade-in');
+            } else {
+                section.style.display = 'none';
+                section.classList.remove('ios-animate-fade-in');
+            }
         });
     });
 }
 
-// Quantity dialog functions
+// iOS-style quantity dialog functions
 function openQuantityDialog(productName, productStock) {
     currentProduct = {
         name: productName,
@@ -591,13 +683,30 @@ function openQuantityDialog(productName, productStock) {
     document.getElementById('dialogProductName').textContent = productName;
     document.getElementById('dialogProductStock').textContent = `库存: ${productStock}`;
     document.getElementById('quantityDisplay').value = '0';
-    document.getElementById('quantityDialog').style.display = 'block';
-    document.getElementById('dialogOverlay').style.display = 'block';
+    
+    const dialog = document.getElementById('quantityDialog');
+    const overlay = document.getElementById('dialogOverlay');
+    
+    dialog.style.display = 'block';
+    overlay.style.display = 'block';
+    
+    // iOS-style modal animation
+    setTimeout(() => {
+        dialog.classList.add('show');
+    }, 10);
 }
 
 function closeQuantityDialog() {
-    document.getElementById('quantityDialog').style.display = 'none';
-    document.getElementById('dialogOverlay').style.display = 'none';
+    const dialog = document.getElementById('quantityDialog');
+    const overlay = document.getElementById('dialogOverlay');
+    
+    dialog.classList.remove('show');
+    
+    setTimeout(() => {
+        dialog.style.display = 'none';
+        overlay.style.display = 'none';
+    }, 300);
+    
     currentProduct = null;
 }
 
@@ -608,21 +717,35 @@ function addDigit(digit) {
     } else {
         display.value += digit;
     }
+    
+    // Add subtle animation
+    display.style.transform = 'scale(1.05)';
+    setTimeout(() => {
+        display.style.transform = 'scale(1)';
+    }, 150);
 }
 
 function clearQuantity() {
-    document.getElementById('quantityDisplay').value = '0';
+    const display = document.getElementById('quantityDisplay');
+    display.value = '0';
+    
+    // Add clear animation
+    display.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        display.style.transform = 'scale(1)';
+    }, 150);
 }
 
 function confirmQuantity() {
     const quantity = parseInt(document.getElementById('quantityDisplay').value);
     
     if (!currentProduct || quantity <= 0) {
+        showIOSAlert('请输入有效数量', 'warning');
         return;
     }
     
     if (quantity > currentProduct.stock) {
-        alert('数量超过库存限制！');
+        showIOSAlert('数量超过库存限制！', 'error');
         return;
     }
     
@@ -630,7 +753,7 @@ function confirmQuantity() {
     closeQuantityDialog();
 }
 
-// Cart management
+// iOS-style cart management
 function addToCart(productName, quantity) {
     const existingItem = cart.find(item => item.name === productName);
     
@@ -642,14 +765,14 @@ function addToCart(productName, quantity) {
     
     updateCartDisplay();
     saveCart();
-    showNotification(`已添加 ${productName} x${quantity} 到购物车`, 'success');
+    showIOSAlert(`已添加 ${productName} x${quantity} 到购物车`, 'success');
 }
 
 function removeFromCart(productName) {
     cart = cart.filter(item => item.name !== productName);
     updateCartDisplay();
     saveCart();
-    showNotification(`已从购物车移除 ${productName}`, 'info');
+    showIOSAlert(`已从购物车移除 ${productName}`, 'info');
 }
 
 function clearCart() {
@@ -659,7 +782,7 @@ function clearCart() {
         cart = [];
         updateCartDisplay();
         saveCart();
-        showNotification('购物车已清空', 'info');
+        showIOSAlert('购物车已清空', 'info');
     }
 }
 
@@ -680,12 +803,12 @@ function updateCartDisplay() {
     cartTotal.textContent = `总计: ${totalItems} 件商品`;
     
     cartItems.innerHTML = cart.map(item => `
-        <div class="cart-item">
+        <div class="cart-item ios-animate-fade-in">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-quantity">数量: ${item.quantity}</div>
             </div>
-            <button class="cart-item-remove" onclick="removeFromCart('${item.name}')" title="移除商品">
+            <button class="cart-item-remove ios-haptic" onclick="removeFromCart('${item.name}')" title="移除商品">
                 ×
             </button>
         </div>
@@ -698,7 +821,7 @@ function saveCart() {
 
 async function submitCart() {
     if (cart.length === 0) {
-        alert('购物车为空！');
+        showIOSAlert('购物车为空！', 'warning');
         return;
     }
     
@@ -727,46 +850,49 @@ async function submitCart() {
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('提交失败，请重试！');
+        showIOSAlert('提交失败，请重试！', 'error');
     }
 }
 
-// Notification system
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type}`;
-    notification.textContent = message;
-    notification.style.cssText = `
+// iOS-style notification system
+function showIOSAlert(message, type = 'info') {
+    const alert = document.createElement('div');
+    alert.className = `ios-alert ios-alert-${type} ios-animate-slide-up`;
+    alert.innerHTML = `
+        <div class="ios-body">${message}</div>
+        <button type="button" onclick="this.parentElement.remove()" 
+                style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--ios-secondary-label);">×</button>
+    `;
+    alert.style.cssText = `
         position: fixed;
         top: 100px;
         right: 20px;
         z-index: 3000;
-        min-width: 250px;
-        animation: slideIn 0.3s ease;
+        min-width: 280px;
+        max-width: 400px;
     `;
     
-    document.body.appendChild(notification);
+    document.body.appendChild(alert);
     
+    // Auto remove after 4 seconds
     setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
+        if (alert.parentNode) {
+            alert.style.animation = 'ios-fade-out 0.3s ease';
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 300);
+        }
+    }, 4000);
 }
 
-// Add CSS animations
+// Add fade out animation
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+    @keyframes ios-fade-out {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100%); }
     }
 `;
 document.head.appendChild(style);
