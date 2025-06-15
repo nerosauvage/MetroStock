@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetroCom Inventory System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 10px;
+        }
+
+        .navbar-left img.logo {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        .navbar-right .nav-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .navbar-right .nav-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* 主要内容样式 */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 80px); /* 减去导航栏的高度 */
+            margin-top: 20px;
+        }
+
+        .category-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .category-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 200px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .category-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .category-card:hover {
+            transform: scale(1.05);
+        }
+
+        .category-card a {
+            text-decoration: none;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="{{ url_for('static', filename='uploads/logo.png.webp') }}" alt="Logo" class="logo" onclick="window.location.href='/'">
+        </div>
+        <div class="navbar-right">
+            <button class="nav-btn" onclick="window.location.reload()">Refresh</button>
+            <button class="nav-btn" onclick="window.location.href='/shipment_overview'">Shipment</button>
+            <button class="nav-btn" onclick="window.location.href='/'">Inventory Query</button>
+            <button class="nav-btn" onclick="window.history.back()">Go Back</button>
+            <button class="nav-btn" onclick="window.history.forward()">Go Forward</button>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="main-content">
+        <h1>MetroCom Inventory System</h1>
+
+        <a href="{{ url_for('shipment_overview') }}" class="button">Shipment</a>
+
+        <div class="category-container">
+            {% for category in categories %}
+            <div class="category-card" onclick="window.location.href='{{ url_for('show_category', category_name=category.name) }}'">
+                <img src="{{ category.image }}" alt="{{ category.name }} cover">
+                <span>{{ category.name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

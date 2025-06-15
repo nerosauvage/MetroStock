@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product_name }} 记录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .record-container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .incoming {
+            color: blue;
+        }
+
+        .outgoing {
+            color: red;
+        }
+
+        .keyboard-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .key {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .key:active {
+            background-color: #f0f0f0;
+        }
+
+        .screen {
+            width: 100%;
+            font-size: 24px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: right;
+            background-color: #ffffff;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-stock-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .remove-stock-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .upload-cover-btn {
+            background-color: #007bff;
+            color: white;
+        }
+
+        a.back-link {
+            font-size: 16px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        a.back-link:hover {
+            text-decoration: underline;
+        }
+
+        .recipient-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .recipient-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .recipient-container select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="record-container">
+        <h1>{{ product_name }} 的进/出货记录</h1>
+        <table>
+            <tr>
+                <th>日期</th>
+                <th>收货人</th>
+                <th>数量</th>
+                <th>类型</th>
+                <th>剩余库存</th>
+            </tr>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.date or "N/A" }}</td>
+                <td>{{ record.recipient }}</td>
+                <td class="{{ 'incoming' if record.quantity > 0 else 'outgoing' }}">{{ record.quantity }}</td>
+                <td class="{{ 'incoming' if record.quantity > 0 else 'outgoing' }}">{{ '进货' if record.quantity > 0 else '出货' }}</td>
+                <td>{{ record.remaining }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="buttons">
+            <button id="show-keyboard-add" class="add-stock-btn">添加库存</button>
+            <button id="show-keyboard-remove" class="remove-stock-btn">删除库存</button>
+            <button onclick="window.location.href='{{ url_for('upload_product_image', product_name=product_name) }}'" class="upload-cover-btn">上传封面</button>
+            <a href="{{ url_for('home') }}" class="back-link">返回产品列表</a>
+        </div>
+
+        <div id="keyboard-container" class="keyboard-container">
+            <div class="screen" id="screen">0</div>
+            <div class="keyboard">
+                {% for i in range(1, 10) %}
+                <div class="key" onclick="addToScreen('{{ i }}')">{{ i }}</div>
+                {% endfor %}
+                <div class="key" onclick="clearScreen()">清除</div>
+                <div class="key" onclick="addToScreen('0')">0</div>
+                <div class="key" id="submit-stock-btn">确定</div>
+            </div>
+            <div class="recipient-container">
+                <label for="recipient">选择进货人:</label>
+                <select id="recipient" name="recipient">
+                    <option value="GALA">GALA</option>
+                    <option value="Cataclysm">Cataclysm</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('show-keyboard-add').addEventListener('click', function() {
+            document.getElementById('keyboard-container').style.display = 'block';
+            document.getElementById('submit-stock-btn').setAttribute('onclick', 'submitStock(true)');
+        });
+
+        document.getElementById('show-keyboard-remove').addEventListener('click', function() {
+            document.getElementById('keyboard-container').style.display = 'block';
+            document.getElementById('submit-stock-btn').setAttribute('onclick', 'submitStock(false)');
+        });
+
+        function addToScreen(value) {
+            let screen = document.getElementById('screen');
+            if (screen.innerHTML === "0") {
+                screen.innerHTML = value;
+            } else {
+                screen.innerHTML += value;
+            }
+        }
+
+        function clearScreen() {
+            document.getElementById('screen').innerHTML = "0";
+        }
+
+        function submitStock(isAdding) {
+            let quantity = parseInt(document.getElementById('screen').innerHTML, 10);
+            if (!isAdding) {
+                quantity = -quantity;
+            }
+            let productName = "{{ product_name }}";
+            let recipient = document.getElementById('recipient').value;
+
+            fetch('/add_stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'product_name=' + encodeURIComponent(productName) + 
+                      '&quantity=' + encodeURIComponent(quantity) + 
+                      '&recipient=' + encodeURIComponent(recipient)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("库存操作成功: " + (isAdding ? "增加" : "删除") + " " + Math.abs(quantity));
+                    window.location.reload();
+                } else {
+                    return response.text().then(text => { alert(text); });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

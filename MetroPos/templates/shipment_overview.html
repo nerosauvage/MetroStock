@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>库存总览</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-left img {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        .navbar-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .content {
+            flex: 1;
+            padding-right: 300px; /* 为购物车部分预留空间 */
+            margin-top: 20px;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .product-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 200px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .product-card img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+
+        .product-card a {
+            text-decoration: none;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 40px 0;
+        }
+
+        #quantity-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+
+        .screen {
+            width: 100%;
+            font-size: 24px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: right;
+            background-color: #ffffff;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .key {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .key:active {
+            background-color: #f0f0f0;
+        }
+
+        .cart {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .cart h2 {
+            margin-top: 0;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-item span {
+            font-size: 18px;
+        }
+
+        .cart-item .remove-item {
+            cursor: pointer;
+            color: red;
+        }
+
+        .cart-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .cart-footer button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="{{ url_for('static', filename='uploads/logo.png.webp') }}" alt="Logo" class="logo">
+        </div>
+        <div class="navbar-right">
+            <button class="nav-btn" onclick="window.location.reload()">Refresh</button>
+            <button class="nav-btn" onclick="window.location.href='/shipment_overview'">Shipment</button>
+            <button class="nav-btn" onclick="window.location.href='/'">Inventory Query</button>
+            <button class="nav-btn" onclick="window.history.back()">Go Back</button>
+            <button class="nav-btn" onclick="window.history.forward()">Go Forward</button>
+        </div>
+    </nav>
+
+    <div class="content">
+        <h1>库存总览</h1>
+        {% for category, products in products_by_category.items() %}
+        <div class="category-section">
+            <h2>{{ category }}</h2>
+            <div class="product-container">
+                {% for product in products %}
+                <div class="product-card" onclick="openQuantityDialog('{{ product.name }}', '{{ product.quantity }}')">
+                    <img src="{{ url_for('static', filename=product.image.split('static/')[-1]) }}" alt="{{ product.name }}">
+                    <span>{{ product.name }} - 库存: {{ product.quantity }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <hr>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 购物车 -->
+    <div class="cart" id="cart">
+        <h2>购物车</h2>
+        <div id="cart-items"></div>
+        <div class="cart-footer">
+            <button onclick="submitCart()">确认出货</button>
+        </div>
+    </div>
+
+    <!-- 对话框 -->
+    <div id="quantity-dialog">
+        <div class="screen" id="screen">0</div>
+        <div class="keyboard">
+            {% for i in range(1, 10) %}
+            <div class="key" onclick="addToScreen('{{ i }}')">{{ i }}</div>
+            {% endfor %}
+            <div class="key" onclick="clearScreen()">清除</div>
+            <div class="key" onclick="addToScreen('0')">0</div>
+            <div class="key" onclick="submitQuantity()">确定</div>
+        </div>
+    </div>
+
+    <script>
+        let currentProductName = '';
+        let currentProductStock = 0;
+
+        function openQuantityDialog(productName, productStock) {
+            currentProductName = productName;
+            currentProductStock = productStock;
+            document.getElementById('quantity-dialog').style.display = 'block';
+        }
+
+        function addToScreen(value) {
+            let screen = document.getElementById('screen');
+            if (screen.innerHTML === "0") {
+                screen.innerHTML = value;
+            } else {
+                screen.innerHTML += value;
+            }
+        }
+
+        function clearScreen() {
+            document.getElementById('screen').innerHTML = "0";
+        }
+
+        function submitQuantity() {
+            let quantity = parseInt(document.getElementById('screen').innerHTML);
+            if (quantity === 0) return;
+
+            if (quantity > currentProductStock) {
+                alert('库存不足，无法添加到购物车。');
+                return;
+            }
+
+            let cartItems = document.getElementById('cart-items');
+
+            let cartItem = document.createElement('div');
+            cartItem.className = 'cart-item';
+            cartItem.innerHTML = `
+                <span>${currentProductName} - ${quantity}</span>
+                <span class="remove-item" onclick="removeItem(this)">X</span>
+            `;
+
+            cartItems.appendChild(cartItem);
+
+            clearScreen();
+            document.getElementById('quantity-dialog').style.display = 'none';
+        }
+
+        function removeItem(element) {
+            element.parentElement.remove();
+        }
+
+        function submitCart() {
+            let cartItems = document.querySelectorAll('.cart-item span:first-child');
+            let products = [];
+
+            cartItems.forEach(item => {
+                let [name, quantity] = item.innerText.split(' - ');
+                quantity = parseInt(quantity) || 0;
+                products.push({name: name, quantity: quantity});
+            });
+
+            if (products.length > 0) {
+                let shipmentData = {
+                    products: products
+                };
+
+                fetch('/shipment_confirmation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(shipmentData)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error(`Request failed with status ${response.status}`);
+                    }
+                })
+                .then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('提交失败，请重试！');
+                });
+            } else {
+                alert('购物车为空!');
+            }
+        }
+    </script>
+</body>
+</html>
