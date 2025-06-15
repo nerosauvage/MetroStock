@@ -1,0 +1,16 @@
+{
+  "name": "metropos-inventory",
+  "version": "1.0.0",
+  "description": "MetroCom Inventory Management System",
+  "main": "app.py",
+  "scripts": {
+    "build": "echo 'No build step required for Flask app'",
+    "start": "python app.py",
+    "dev": "python app.py"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
