@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MetroCom Inventory System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='uploads/logo.png.webp') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="{{ url_for('static', filename='uploads/logo.png.webp') }}" 
+                 alt="MetroCom Logo" 
+                 class="logo" 
+                 onclick="window.location.href='{{ url_for('home') }}'">
+        </div>
+        <div class="navbar-right">
+            <button class="nav-btn" onclick="window.location.reload()" title="刷新页面">
+                <span>🔄</span> Refresh
+            </button>
+            <button class="nav-btn" onclick="window.location.href='{{ url_for('shipment_overview') }}'" title="出货管理">
+                <span>📦</span> Shipment
+            </button>
+            <button class="nav-btn" onclick="window.location.href='{{ url_for('home') }}'" title="库存查询">
+                <span>📊</span> Inventory
+            </button>
+            <button class="nav-btn" onclick="window.history.back()" title="返回上一页">
+                <span>⬅️</span> Back
+            </button>
+            <button class="nav-btn" onclick="window.history.forward()" title="前进下一页">
+                <span>➡️</span> Forward
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else category }}">
+                        {{ message }}
+                        <button type="button" class="close" onclick="this.parentElement.style.display='none'">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 MetroCom Inventory System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- Print Styles -->
+    <style>
+        @media print {
+            .navbar, .footer, .flash-messages, 
+            .btn-print, .btn-submit, .button-group,
+            .nav-btn, .cart {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .container {
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
+    </style>
+</body>
+</html>

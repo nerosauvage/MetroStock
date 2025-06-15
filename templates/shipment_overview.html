@@ -1,0 +1,774 @@
+{% extends "base.html" %}
+
+{% block title %}库存总览 - MetroCom{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-content {
+        display: flex;
+        padding: 20px;
+        gap: 20px;
+        min-height: calc(100vh - 120px);
+    }
+
+    .content-area {
+        flex: 1;
+        padding-right: 320px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .search-bar {
+        max-width: 400px;
+        margin: 0 auto 30px;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 40px 12px 15px;
+        border: 2px solid #ddd;
+        border-radius: 25px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: #007bff;
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+
+    .category-section {
+        margin-bottom: 40px;
+    }
+
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #007bff;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0;
+    }
+
+    .category-count {
+        background: #007bff;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        border-color: #007bff;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    .product-name {
+        font-weight: bold;
+        font-size: 0.9rem;
+        color: #333;
+        margin-bottom: 5px;
+        line-height: 1.3;
+    }
+
+    .product-stock {
+        font-size: 0.8rem;
+        color: #666;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stock-badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .stock-high {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .stock-medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .stock-low {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .stock-out {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+
+    /* Shopping Cart Styles */
+    .cart-sidebar {
+        position: fixed;
+        right: 0;
+        top: 80px;
+        width: 300px;
+        height: calc(100vh - 80px);
+        background: white;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        overflow-y: auto;
+        z-index: 1000;
+        border-left: 3px solid #007bff;
+    }
+
+    .cart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .cart-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+
+    .cart-count {
+        background: #007bff;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 50%;
+        font-size: 0.8rem;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .cart-items {
+        margin-bottom: 20px;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item-info {
+        flex: 1;
+    }
+
+    .cart-item-name {
+        font-weight: bold;
+        font-size: 0.9rem;
+        color: #333;
+        margin-bottom: 2px;
+    }
+
+    .cart-item-quantity {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .cart-item-remove {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-item-remove:hover {
+        background: #c82333;
+    }
+
+    .cart-footer {
+        border-top: 2px solid #eee;
+        padding-top: 15px;
+    }
+
+    .cart-total {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: center;
+        color: #333;
+    }
+
+    .cart-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cart-btn {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .cart-btn-primary {
+        background: #28a745;
+        color: white;
+    }
+
+    .cart-btn-primary:hover {
+        background: #218838;
+    }
+
+    .cart-btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .cart-btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .empty-cart {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 20px 0;
+    }
+
+    /* Quantity Dialog */
+    .quantity-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        display: none;
+        min-width: 300px;
+    }
+
+    .dialog-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .dialog-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .dialog-subtitle {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .quantity-display {
+        width: 100%;
+        font-size: 2rem;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        background: #f8f9fa;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .number-pad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .number-key {
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .number-key:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+    }
+
+    .number-key:active {
+        transform: scale(0.95);
+    }
+
+    .number-key.special {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .number-key.special:hover {
+        background: #0056b3;
+    }
+
+    .dialog-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .dialog-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .dialog-btn-cancel {
+        background: #6c757d;
+        color: white;
+    }
+
+    .dialog-btn-confirm {
+        background: #28a745;
+        color: white;
+    }
+
+    .dialog-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-content {
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .content-area {
+            padding-right: 0;
+        }
+
+        .cart-sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+            top: 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            border-left: none;
+            border-top: 3px solid #007bff;
+        }
+
+        .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .quantity-dialog {
+            width: 90%;
+            max-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-area">
+    <div class="page-header">
+        <h1 class="page-title">库存总览</h1>
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索产品..." id="searchInput">
+            <span class="search-icon">🔍</span>
+        </div>
+    </div>
+
+    {% for category, products in products_by_category.items() %}
+    <div class="category-section" data-category="{{ category }}">
+        <div class="category-header">
+            <h2 class="category-title">{{ category }}</h2>
+            <span class="category-count">{{ products|length }} 件</span>
+        </div>
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card" 
+                 data-product-name="{{ product.name }}" 
+                 data-product-stock="{{ product.quantity }}"
+                 onclick="openQuantityDialog('{{ product.name }}', '{{ product.quantity }}')">
+                <img src="{{ url_for('static', filename=product.image.split('static/')[-1]) }}" 
+                     alt="{{ product.name }}" 
+                     class="product-image"
+                     loading="lazy">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-stock">
+                    <span>库存: {{ product.quantity }}</span>
+                    <span class="stock-badge {% if product.quantity > 20 %}stock-high{% elif product.quantity > 5 %}stock-medium{% elif product.quantity > 0 %}stock-low{% else %}stock-out{% endif %}">
+                        {% if product.quantity > 20 %}充足{% elif product.quantity > 5 %}正常{% elif product.quantity > 0 %}偏低{% else %}缺货{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Shopping Cart Sidebar -->
+<div class="cart-sidebar">
+    <div class="cart-header">
+        <h3 class="cart-title">购物车</h3>
+        <span class="cart-count" id="cartCount">0</span>
+    </div>
+    
+    <div class="cart-items" id="cartItems">
+        <div class="empty-cart">购物车为空</div>
+    </div>
+    
+    <div class="cart-footer">
+        <div class="cart-total" id="cartTotal">总计: 0 件商品</div>
+        <div class="cart-actions">
+            <button class="cart-btn cart-btn-primary" onclick="submitCart()">
+                确认出货
+            </button>
+            <button class="cart-btn cart-btn-secondary" onclick="clearCart()">
+                清空购物车
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Quantity Selection Dialog -->
+<div class="quantity-dialog" id="quantityDialog">
+    <div class="dialog-header">
+        <div class="dialog-title" id="dialogProductName">选择数量</div>
+        <div class="dialog-subtitle" id="dialogProductStock">库存: 0</div>
+    </div>
+    
+    <input type="text" class="quantity-display" id="quantityDisplay" value="0" readonly>
+    
+    <div class="number-pad">
+        <div class="number-key" onclick="addDigit('1')">1</div>
+        <div class="number-key" onclick="addDigit('2')">2</div>
+        <div class="number-key" onclick="addDigit('3')">3</div>
+        <div class="number-key" onclick="addDigit('4')">4</div>
+        <div class="number-key" onclick="addDigit('5')">5</div>
+        <div class="number-key" onclick="addDigit('6')">6</div>
+        <div class="number-key" onclick="addDigit('7')">7</div>
+        <div class="number-key" onclick="addDigit('8')">8</div>
+        <div class="number-key" onclick="addDigit('9')">9</div>
+        <div class="number-key special" onclick="clearQuantity()">清除</div>
+        <div class="number-key" onclick="addDigit('0')">0</div>
+        <div class="number-key special" onclick="confirmQuantity()">确定</div>
+    </div>
+    
+    <div class="dialog-actions">
+        <button class="dialog-btn dialog-btn-cancel" onclick="closeQuantityDialog()">取消</button>
+        <button class="dialog-btn dialog-btn-confirm" onclick="confirmQuantity()">添加到购物车</button>
+    </div>
+</div>
+
+<!-- Overlay for dialog -->
+<div class="modal-overlay" id="dialogOverlay" style="display: none;" onclick="closeQuantityDialog()"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentProduct = null;
+let cart = JSON.parse(localStorage.getItem('metropos_cart') || '[]');
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartDisplay();
+    setupSearch();
+});
+
+// Search functionality
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const productCards = document.querySelectorAll('.product-card');
+        const categorySection = document.querySelectorAll('.category-section');
+        
+        productCards.forEach(card => {
+            const productName = card.dataset.productName.toLowerCase();
+            const isVisible = productName.includes(searchTerm);
+            card.style.display = isVisible ? 'block' : 'none';
+        });
+        
+        // Hide empty categories
+        categorySection.forEach(section => {
+            const visibleProducts = section.querySelectorAll('.product-card[style="display: block"], .product-card:not([style*="display: none"])');
+            section.style.display = visibleProducts.length > 0 ? 'block' : 'none';
+        });
+    });
+}
+
+// Quantity dialog functions
+function openQuantityDialog(productName, productStock) {
+    currentProduct = {
+        name: productName,
+        stock: parseInt(productStock)
+    };
+    
+    document.getElementById('dialogProductName').textContent = productName;
+    document.getElementById('dialogProductStock').textContent = `库存: ${productStock}`;
+    document.getElementById('quantityDisplay').value = '0';
+    document.getElementById('quantityDialog').style.display = 'block';
+    document.getElementById('dialogOverlay').style.display = 'block';
+}
+
+function closeQuantityDialog() {
+    document.getElementById('quantityDialog').style.display = 'none';
+    document.getElementById('dialogOverlay').style.display = 'none';
+    currentProduct = null;
+}
+
+function addDigit(digit) {
+    const display = document.getElementById('quantityDisplay');
+    if (display.value === '0') {
+        display.value = digit;
+    } else {
+        display.value += digit;
+    }
+}
+
+function clearQuantity() {
+    document.getElementById('quantityDisplay').value = '0';
+}
+
+function confirmQuantity() {
+    const quantity = parseInt(document.getElementById('quantityDisplay').value);
+    
+    if (!currentProduct || quantity <= 0) {
+        return;
+    }
+    
+    if (quantity > currentProduct.stock) {
+        alert('数量超过库存限制！');
+        return;
+    }
+    
+    addToCart(currentProduct.name, quantity);
+    closeQuantityDialog();
+}
+
+// Cart management
+function addToCart(productName, quantity) {
+    const existingItem = cart.find(item => item.name === productName);
+    
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        cart.push({ name: productName, quantity: quantity });
+    }
+    
+    updateCartDisplay();
+    saveCart();
+    showNotification(`已添加 ${productName} x${quantity} 到购物车`, 'success');
+}
+
+function removeFromCart(productName) {
+    cart = cart.filter(item => item.name !== productName);
+    updateCartDisplay();
+    saveCart();
+    showNotification(`已从购物车移除 ${productName}`, 'info');
+}
+
+function clearCart() {
+    if (cart.length === 0) return;
+    
+    if (confirm('确定要清空购物车吗？')) {
+        cart = [];
+        updateCartDisplay();
+        saveCart();
+        showNotification('购物车已清空', 'info');
+    }
+}
+
+function updateCartDisplay() {
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    const cartTotal = document.getElementById('cartTotal');
+    
+    cartCount.textContent = cart.length;
+    
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<div class="empty-cart">购物车为空</div>';
+        cartTotal.textContent = '总计: 0 件商品';
+        return;
+    }
+    
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartTotal.textContent = `总计: ${totalItems} 件商品`;
+    
+    cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-quantity">数量: ${item.quantity}</div>
+            </div>
+            <button class="cart-item-remove" onclick="removeFromCart('${item.name}')" title="移除商品">
+                ×
+            </button>
+        </div>
+    `).join('');
+}
+
+function saveCart() {
+    localStorage.setItem('metropos_cart', JSON.stringify(cart));
+}
+
+async function submitCart() {
+    if (cart.length === 0) {
+        alert('购物车为空！');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/shipment_confirmation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                products: cart
+            })
+        });
+        
+        if (response.ok) {
+            const html = await response.text();
+            document.open();
+            document.write(html);
+            document.close();
+            
+            // Clear cart after successful submission
+            cart = [];
+            saveCart();
+        } else {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('提交失败，请重试！');
+    }
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 3000;
+        min-width: 250px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
